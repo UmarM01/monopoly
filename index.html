@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoly Board Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* A light, pleasant blue background */
+        }
+        /* The main container for the board game */
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        /* The board itself, using CSS Grid for the layout */
+        .board {
+            display: grid;
+            grid-template-columns: 100px repeat(9, 60px) 100px;
+            grid-template-rows: 100px repeat(9, 60px) 100px;
+            gap: 2px;
+            background-color: #0c4a6e; /* A dark blue for the "streets" */
+            border: 4px solid #0c4a6e;
+            border-radius: 12px;
+            position: relative; /* Needed for positioning the player token absolutely */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
+        }
+        /* General styling for all spaces on the board */
+        .space {
+            background-color: #cffafe; /* Light cyan background for properties */
+            border: 1px solid #0c4a6e;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 500;
+            position: relative;
+            padding: 2px;
+        }
+        /* Specific styling for corner spaces */
+        .corner {
+            font-size: 14px;
+            font-weight: 700;
+            justify-content: center;
+        }
+        /* Styling for the header bar on properties */
+        .header {
+            width: 100%;
+            height: 16px;
+            border-bottom: 2px solid #0c4a6e;
+        }
+        /* Color classes for different property groups */
+        .brown { background-color: #964B00; }
+        .light-blue { background-color: #aaccff; }
+        .pink { background-color: #D8338C; }
+        .orange { background-color: #F7931E; }
+        .red { background-color: #ED1B24; }
+        .yellow { background-color: #FEF200; }
+        .green { background-color: #00A651; }
+        .dark-blue { background-color: #0072BB; }
+        .railroad .icon { font-size: 24px; }
+        .utility .icon { font-size: 24px; }
+
+        /* Positioning each space on the grid */
+        .space-0 { grid-column: 11 / 12; grid-row: 11 / 12; }
+        .space-1 { grid-column: 10 / 11; grid-row: 11 / 12; }
+        .space-2 { grid-column: 9 / 10; grid-row: 11 / 12; }
+        .space-3 { grid-column: 8 / 9; grid-row: 11 / 12; }
+        .space-4 { grid-column: 7 / 8; grid-row: 11 / 12; }
+        .space-5 { grid-column: 6 / 7; grid-row: 11 / 12; }
+        .space-6 { grid-column: 5 / 6; grid-row: 11 / 12; }
+        .space-7 { grid-column: 4 / 5; grid-row: 11 / 12; }
+        .space-8 { grid-column: 3 / 4; grid-row: 11 / 12; }
+        .space-9 { grid-column: 2 / 3; grid-row: 11 / 12; }
+        .space-10 { grid-column: 1 / 2; grid-row: 11 / 12; }
+        .space-11 { grid-column: 1 / 2; grid-row: 10 / 11; }
+        .space-12 { grid-column: 1 / 2; grid-row: 9 / 10; }
+        .space-13 { grid-column: 1 / 2; grid-row: 8 / 9; }
+        .space-14 { grid-column: 1 / 2; grid-row: 7 / 8; }
+        .space-15 { grid-column: 1 / 2; grid-row: 6 / 7; }
+        .space-16 { grid-column: 1 / 2; grid-row: 5 / 6; }
+        .space-17 { grid-column: 1 / 2; grid-row: 4 / 5; }
+        .space-18 { grid-column: 1 / 2; grid-row: 3 / 4; }
+        .space-19 { grid-column: 1 / 2; grid-row: 2 / 3; }
+        .space-20 { grid-column: 1 / 2; grid-row: 1 / 2; }
+        .space-21 { grid-column: 2 / 3; grid-row: 1 / 2; }
+        .space-22 { grid-column: 3 / 4; grid-row: 1 / 2; }
+        .space-23 { grid-column: 4 / 5; grid-row: 1 / 2; }
+        .space-24 { grid-column: 5 / 6; grid-row: 1 / 2; }
+        .space-25 { grid-column: 6 / 7; grid-row: 1 / 2; }
+        .space-26 { grid-column: 7 / 8; grid-row: 1 / 2; }
+        .space-27 { grid-column: 8 / 9; grid-row: 1 / 2; }
+        .space-28 { grid-column: 9 / 10; grid-row: 1 / 2; }
+        .space-29 { grid-column: 10 / 11; grid-row: 1 / 2; }
+        .space-30 { grid-column: 11 / 12; grid-row: 1 / 2; }
+        .space-31 { grid-column: 11 / 12; grid-row: 2 / 3; }
+        .space-32 { grid-column: 11 / 12; grid-row: 3 / 4; }
+        .space-33 { grid-column: 11 / 12; grid-row: 4 / 5; }
+        .space-34 { grid-column: 11 / 12; grid-row: 5 / 6; }
+        .space-35 { grid-column: 11 / 12; grid-row: 6 / 7; }
+        .space-36 { grid-column: 11 / 12; grid-row: 7 / 8; }
+        .space-37 { grid-column: 11 / 12; grid-row: 8 / 9; }
+        .space-38 { grid-column: 11 / 12; grid-row: 9 / 10; }
+        .space-39 { grid-column: 11 / 12; grid-row: 10 / 11; }
+        
+        /* Center logo and controls area */
+        .center-area {
+            grid-column: 2 / 11;
+            grid-row: 2 / 11;
+            background-color: #e0f2fe;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* Player token styling */
+        .player-token {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.5s ease-in-out; /* This creates the smooth movement animation */
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-sky-100">
+
+    <div class="game-container">
+        <div class="board" id="board">
+            <!-- This is where the board spaces will be generated by JavaScript -->
+            
+            <!-- Player Token -->
+            <div id="player1" class="player-token bg-red-500"></div>
+
+            <!-- Center Area -->
+            <div class="center-area">
+                <h1 class="text-4xl font-bold text-sky-800 mb-4">MONOPOLY</h1>
+                <div class="text-center">
+                    <p class="text-lg text-sky-700">Dice Roll: <span id="dice-result" class="font-bold">...</span></p>
+                    <button id="roll-dice-btn" class="mt-4 px-6 py-2 bg-sky-600 text-white font-bold rounded-lg shadow-md hover:bg-sky-700 active:scale-95 transition-transform">
+                        Roll Dice
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA ---
+            // This array holds the information for each space on the board.
+            // This is how you "create" the different properties.
+            const boardData = [
+                { name: "GO", type: "corner" },
+                { name: "Mediterranean Avenue", price: 60, color: "brown" },
+                { name: "Community Chest", type: "chest" },
+                { name: "Baltic Avenue", price: 60, color: "brown" },
+                { name: "Income Tax", type: "tax" },
+                { name: "Reading Railroad", price: 200, type: "railroad" },
+                { name: "Oriental Avenue", price: 100, color: "light-blue" },
+                { name: "Chance", type: "chance" },
+                { name: "Vermont Avenue", price: 100, color: "light-blue" },
+                { name: "Connecticut Avenue", price: 120, color: "light-blue" },
+                { name: "Jail / Just Visiting", type: "corner" },
+                { name: "St. Charles Place", price: 140, color: "pink" },
+                { name: "Electric Company", price: 150, type: "utility" },
+                { name: "States Avenue", price: 140, color: "pink" },
+                { name: "Virginia Avenue", price: 160, color: "pink" },
+                { name: "Pennsylvania Railroad", price: 200, type: "railroad" },
+                { name: "St. James Place", price: 180, color: "orange" },
+                { name: "Community Chest", type: "chest" },
+                { name: "Tennessee Avenue", price: 180, color: "orange" },
+                { name: "New York Avenue", price: 200, color: "orange" },
+                { name: "Free Parking", type: "corner" },
+                { name: "Kentucky Avenue", price: 220, color: "red" },
+                { name: "Chance", type: "chance" },
+                { name: "Indiana Avenue", price: 220, color: "red" },
+                { name: "Illinois Avenue", price: 240, color: "red" },
+                { name: "B. & O. Railroad", price: 200, type: "railroad" },
+                { name: "Atlantic Avenue", price: 260, color: "yellow" },
+                { name: "Ventnor Avenue", price: 260, color: "yellow" },
+                { name: "Water Works", price: 150, type: "utility" },
+                { name: "Marvin Gardens", price: 280, color: "yellow" },
+                { name: "Go To Jail", type: "corner" },
+                { name: "Pacific Avenue", price: 300, color: "green" },
+                { name: "North Carolina Avenue", price: 300, color: "green" },
+                { name: "Community Chest", type: "chest" },
+                { name: "Pennsylvania Avenue", price: 320, color: "green" },
+                { name: "Short Line", price: 200, type: "railroad" },
+                { name: "Chance", type: "chance" },
+                { name: "Park Place", price: 350, color: "dark-blue" },
+                { name: "Luxury Tax", type: "tax" },
+                { name: "Boardwalk", price: 400, color: "dark-blue" },
+            ];
+
+            const boardElement = document.getElementById('board');
+            const spaceCoordinates = []; // Will store the pixel coordinates of each space
+
+            // --- FUNCTIONS ---
+
+            // Function to generate the HTML for the board spaces from the data array
+            function createBoard() {
+                boardData.forEach((spaceData, i) => {
+                    const space = document.createElement('div');
+                    space.id = `space-${i}`;
+                    space.className = `space space-${i}`;
+
+                    let content = ``;
+                    if (spaceData.type === 'corner') {
+                        space.classList.add('corner');
+                        content = `<span>${spaceData.name}</span>`;
+                    } else if (spaceData.type === 'railroad') {
+                        space.classList.add('railroad');
+                        content = `<div class="name">${spaceData.name}</div><div class="icon">🚂</div><div class="price">$${spaceData.price}</div>`;
+                    } else if (spaceData.type === 'utility') {
+                        space.classList.add('utility');
+                        const icon = spaceData.name.includes('Electric') ? '💡' : '💧';
+                        content = `<div class="name">${spaceData.name}</div><div class="icon">${icon}</div><div class="price">$${spaceData.price}</div>`;
+                    } else if (spaceData.type === 'tax') {
+                        const icon = spaceData.name.includes('Luxury') ? '💍' : '💸';
+                        content = `<div class="name">${spaceData.name}</div><div class="icon">${icon}</div><div class="price">Pay $${spaceData.name.includes('Luxury') ? 75 : 200}</div>`;
+                    } else if (spaceData.type === 'chest' || spaceData.type === 'chance') {
+                        const icon = spaceData.type === 'chest' ? '🎁' : '❓';
+                        content = `<div class="name">${spaceData.name}</div><div class="icon" style="font-size: 30px;">${icon}</div>`;
+                    } else { // It's a property
+                        space.classList.add('property');
+                        content = `<div class="header ${spaceData.color}"></div><div class="name">${spaceData.name}</div><div class="price">$${spaceData.price}</div>`;
+                    }
+                    space.innerHTML = content;
+                    boardElement.appendChild(space);
+                });
+            }
+
+            // Function to calculate and store the exact pixel coordinates of the center of each space.
+            // This is crucial for positioning the token.
+            function calculateSpaceCoordinates() {
+                const boardRect = boardElement.getBoundingClientRect();
+                for (let i = 0; i < 40; i++) {
+                    const spaceEl = document.getElementById(`space-${i}`);
+                    const spaceRect = spaceEl.getBoundingClientRect();
+                    // Calculate center of the space relative to the board's top-left corner
+                    const x = spaceRect.left - boardRect.left + (spaceRect.width / 2);
+                    const y = spaceRect.top - boardRect.top + (spaceRect.height / 2);
+                    spaceCoordinates.push({ x, y });
+                }
+            }
+
+            // --- PLAYER LOGIC ---
+            const player = {
+                element: document.getElementById('player1'),
+                position: 0, // Start at GO (index 0)
+            };
+
+            // This is the core movement function.
+            function movePlayer(steps) {
+                // Update player position, wrapping around the board (40 spaces)
+                player.position = (player.position + steps) % 40;
+                
+                // Get the target coordinates from our pre-calculated array
+                const targetCoords = spaceCoordinates[player.position];
+                
+                // Get the token's own width/height to center it properly
+                const tokenRect = player.element.getBoundingClientRect();
+                const offsetX = targetCoords.x - (tokenRect.width / 2);
+                const offsetY = targetCoords.y - (tokenRect.height / 2);
+
+                // Apply the CSS transform to move the token.
+                // The 'transition' property in the CSS makes this movement smooth.
+                player.element.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            }
+            
+            // Function to initialize the player's position on the board
+            function initPlayerPosition() {
+                movePlayer(0); // Move 0 steps from the start to place it on GO
+            }
+
+
+            // --- EVENT LISTENERS ---
+            const rollDiceBtn = document.getElementById('roll-dice-btn');
+            const diceResultEl = document.getElementById('dice-result');
+
+            rollDiceBtn.addEventListener('click', () => {
+                // Simulate rolling two 6-sided dice
+                const die1 = Math.floor(Math.random() * 6) + 1;
+                const die2 = Math.floor(Math.random() * 6) + 1;
+                const totalRoll = die1 + die2;
+
+                diceResultEl.textContent = `${totalRoll} (${die1} + ${die2})`;
+                movePlayer(totalRoll);
+            });
+
+            // --- INITIALIZATION ---
+            createBoard();
+            calculateSpaceCoordinates();
+            initPlayerPosition();
+
+            // Recalculate coordinates if the window is resized
+            window.addEventListener('resize', () => {
+                spaceCoordinates.length = 0; // Clear the old coordinates
+                calculateSpaceCoordinates();
+                initPlayerPosition(); // Reposition the player based on new coordinates
+            });
+        });
+    </script>
+</body>
+</html>
